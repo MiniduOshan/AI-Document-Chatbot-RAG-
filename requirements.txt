@@ -1,0 +1,3 @@
+pip install flask langchain openai faiss-cpu tiktoken pypdf
+setx OPENAI_API_KEY "your-key"
+python app.py
