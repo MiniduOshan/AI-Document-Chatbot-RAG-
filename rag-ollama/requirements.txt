@@ -1,0 +1,3 @@
+ollama run llama3
+pip install langchain faiss-cpu pypdf sentence-transformers
+python app.py
