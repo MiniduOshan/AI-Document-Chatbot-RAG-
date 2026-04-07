@@ -1,41 +1,52 @@
-from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.llms import Ollama
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.llms import Ollama
 
-def create_db(pdf_path):
+# Load LLM
+llm = Ollama(model="llama3")
+
+# Load embedding model
+embeddings = OllamaEmbeddings(model="llama3")
+
+# Load and process PDF
+def create_vector_store(pdf_path="sample.pdf"):
     loader = PyPDFLoader(pdf_path)
     documents = loader.load()
 
-    splitter = CharacterTextSplitter(
+    splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
         chunk_overlap=50
     )
+
     docs = splitter.split_documents(documents)
 
-    embeddings = HuggingFaceEmbeddings()
-    db = FAISS.from_documents(docs, embeddings)
+    vectorstore = FAISS.from_documents(docs, embeddings)
 
-    return db
+    return vectorstore
 
-def ask_question(db, question):
-    docs = db.similarity_search(question)
 
-    context = "\n".join([doc.page_content for doc in docs])
+# Create vector store once
+vector_db = create_vector_store()
 
-    llm = Ollama(model="llama3")
+
+# Ask question
+def ask_question(query):
+    docs = vector_db.similarity_search(query, k=3)
+
+    context = "\n\n".join([doc.page_content for doc in docs])
 
     prompt = f"""
-You are a helpful assistant.
-Answer ONLY using the context below.
+    Answer the question based ONLY on the context below.
 
-Context:
-{context}
+    Context:
+    {context}
 
-Question:
-{question}
-"""
+    Question:
+    {query}
+    """
 
-    response = llm(prompt)
+    response = llm.invoke(prompt)
+
     return response

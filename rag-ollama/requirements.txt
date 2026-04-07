@@ -1,3 +1,7 @@
-ollama run llama3
-pip install langchain faiss-cpu pypdf sentence-transformers
-python app.py
+flask
+langchain
+langchain-community
+langchain-core
+faiss-cpu
+pypdf
+ollama

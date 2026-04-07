@@ -1,16 +1,29 @@
-from rag import create_db, ask_question
+from flask import Flask, request, jsonify
+from rag import ask_question
 
-print("Loading document...")
+app = Flask(__name__)
 
-db = create_db("sample.pdf")
 
-print("Ready! Ask your questions.\n")
+@app.route("/")
+def home():
+    return "RAG API is running..."
 
-while True:
-    question = input("You: ")
 
-    if question.lower() == "exit":
-        break
+@app.route("/ask", methods=["POST"])
+def ask():
+    data = request.get_json()
+    query = data.get("question")
 
-    answer = ask_question(db, question)
-    print("\nAI:", answer, "\n")
+    if not query:
+        return jsonify({"error": "No question provided"}), 400
+
+    answer = ask_question(query)
+
+    return jsonify({
+        "question": query,
+        "answer": answer
+    })
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
