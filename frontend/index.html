@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocChat | Modern AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --bg-gradient: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html {
+            height: 100%;
+            background: var(--bg-gradient);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Ambient Background Elements for Depth */
+        body::before {
+            content: "";
+            position: absolute;
+            top: -10%; left: -10%;
+            width: 40%; height: 40%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            position: fixed;
+            top: 0; z-index: 100;
+        }
+
+        .brand { 
+            font-weight: 800; font-size: 1.4rem; 
+            background: linear-gradient(90deg, #4f46e5, #9333ea);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-clear {
+            background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.1); 
+            color: #e11d48; padding: 8px 16px; border-radius: 10px;
+            font-size: 0.8rem; cursor: pointer; font-weight: 600; transition: 0.2s;
+        }
+        .btn-clear:hover { background: #f43f5e; color: white; }
+
+        /* MAIN LAYOUT */
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        #chatLog {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scrollbar-width: thin;
+        }
+
+        /* CHAT BUBBLES */
+        .message {
+            max-width: 75%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message p { margin: 0; }
+        .message p + p { margin-top: 8px; }
+        .message ul { margin: 8px 0 0 18px; padding: 0; }
+        .message li + li { margin-top: 5px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message.bot { 
+            background: white; 
+            border: 1px solid #f1f5f9;
+            align-self: flex-start; 
+            border-bottom-left-radius: 4px;
+            color: var(--text-main);
+        }
+
+        .message.user { 
+            background: var(--primary); 
+            color: white; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15);
+        }
+
+        /* FOOTER & INPUT */
+        .chat-footer {
+            padding: 30px 20px 40px;
+            background: transparent;
+        }
+
+        .quick-replies {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .chip {
+            background: white; border: 1px solid #e2e8f0; padding: 8px 16px;
+            border-radius: 12px; font-size: 0.85rem; cursor: pointer;
+            transition: all 0.2s ease; color: var(--text-muted);
+        }
+        .chip:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 10px 16px;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+        .input-wrapper:focus-within { border-color: var(--primary-light); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1); }
+
+        textarea {
+            flex: 1; border: none; background: transparent; outline: none;
+            resize: none; font-family: inherit; font-size: 1rem; padding: 10px 0;
+            color: var(--text-main);
+        }
+
+        .icon-btn {
+            background: #f1f5f9; border: none; cursor: pointer;
+            color: var(--text-muted); width: 42px; height: 42px; 
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; transition: 0.2s;
+        }
+        .icon-btn:hover { background: #e2e8f0; color: var(--primary); }
+
+        .btn-send {
+            background: var(--primary); color: white;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+        .btn-send:hover { background: var(--primary-light); transform: scale(1.05); }
+
+        #fileStatus { 
+            text-align: center; font-size: 0.8rem; color: var(--primary); 
+            font-weight: 600; margin-bottom: 10px; 
+            display: none; /* Hidden until file uploaded */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">DocChat</div>
+        <button id="clearBtn" class="btn-clear">Clear conversation</button>
+    </header>
+
+    <div class="app-container">
+        <div id="chatLog">
+            <div class="message bot">
+                <b>Welcome to DocChat!</b><br>
+                Upload any PDF document using the clip icon and I'll help you analyze it instantly.
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <div id="fileStatus"></div>
+            <div class="quick-replies" id="quickReplies"></div>
+            
+            <form id="askForm" class="input-wrapper">
+                <label for="fileInput" class="icon-btn" title="Upload PDF">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                    <input type="file" id="fileInput" accept=".pdf" hidden>
+                </label>
+
+                <textarea id="question" rows="1" placeholder="Ask DocChat anything..."></textarea>
+
+                <button type="submit" class="icon-btn btn-send">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const chatLog = document.getElementById('chatLog');
+        const questionInput = document.getElementById('question');
+        const fileInput = document.getElementById('fileInput');
+        const fileStatus = document.getElementById('fileStatus');
+        const askForm = document.getElementById('askForm');
+        const sendButton = askForm.querySelector('.btn-send');
+        const quickReplies = document.getElementById('quickReplies');
+
+        let activeFileName = '';
+        let pollTimer = null;
+
+        const chips = ["Summarize this", "Key takeaways", "Explain data"];
+        chips.forEach(text => {
+            const btn = document.createElement('button');
+            btn.className = 'chip';
+            btn.textContent = text;
+            btn.onclick = () => {
+                questionInput.value = text;
+                askForm.dispatchEvent(new Event('submit'));
+            };
+            quickReplies.appendChild(btn);
+        });
+
+        function addMessage(role, text) {
+            const msg = document.createElement('div');
+            msg.className = `message ${role}`;
+            if (role === 'bot') {
+                msg.innerHTML = formatBotText(text);
+            } else {
+                msg.textContent = text;
+            }
+            chatLog.appendChild(msg);
+            chatLog.scrollTo({ top: chatLog.scrollHeight, behavior: 'smooth' });
+            return msg;
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function formatBotText(rawText) {
+            const normalized = String(rawText || '')
+                .replace(/\r/g, '')
+                .replace(/\s\*\s+/g, '\n* ')
+                .replace(/\s-\s+/g, '\n- ')
+                .trim();
+
+            if (!normalized) {
+                return '<p>No response generated.</p>';
+            }
+
+            const lines = normalized
+                .split('\n')
+                .map(line => line.trim())
+                .filter(Boolean);
+
+            const htmlParts = [];
+            let listItems = [];
+
+            const flushList = () => {
+                if (listItems.length > 0) {
+                    htmlParts.push(`<ul>${listItems.join('')}</ul>`);
+                    listItems = [];
+                }
+            };
+
+            for (const line of lines) {
+                const bulletMatch = line.match(/^[-*]\s+(.*)$/);
+                if (bulletMatch) {
+                    listItems.push(`<li>${escapeHtml(bulletMatch[1])}</li>`);
+                } else {
+                    flushList();
+                    htmlParts.push(`<p>${escapeHtml(line)}</p>`);
+                }
+            }
+
+            flushList();
+            return htmlParts.join('');
+        }
+
+        function setInputState(disabled) {
+            questionInput.disabled = disabled;
+            sendButton.disabled = disabled;
+            sendButton.style.opacity = disabled ? '0.6' : '1';
+            sendButton.style.cursor = disabled ? 'not-allowed' : 'pointer';
+        }
+
+        async function fetchJson(url, options = {}) {
+            const res = await fetch(url, options);
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data.error || 'Request failed');
+            }
+            return data;
+        }
+
+        async function pollIndexStatus() {
+            try {
+                const status = await fetchJson('/status');
+
+                if (status.error) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                    fileStatus.textContent = 'Indexing failed';
+                    addMessage('bot', `Indexing error: ${status.error}`);
+                    setInputState(true);
+                    return;
+                }
+
+                if (status.ready && !status.indexing) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                    fileStatus.textContent = `Active: ${activeFileName}`;
+                    addMessage('bot', `Document ready: ${activeFileName}. Ask me anything.`);
+                    setInputState(false);
+                }
+            } catch (err) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+                fileStatus.textContent = 'Status check failed';
+                addMessage('bot', `Status error: ${err.message}`);
+                setInputState(true);
+            }
+        }
+
+        fileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                fileStatus.style.display = 'block';
+                fileStatus.textContent = 'Only PDF files are allowed';
+                fileInput.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            activeFileName = file.name;
+
+            try {
+                fileStatus.style.display = 'block';
+                fileStatus.textContent = 'Uploading...';
+                setInputState(true);
+
+                const uploadData = await fetchJson('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                activeFileName = uploadData.filename || file.name;
+                fileStatus.textContent = `Indexing ${activeFileName}...`;
+                addMessage('bot', `Uploaded ${activeFileName}. Preparing document for search...`);
+
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                }
+                pollTimer = setInterval(pollIndexStatus, 1200);
+                pollIndexStatus();
+            } catch (err) {
+                fileStatus.textContent = 'Upload failed';
+                addMessage('bot', `Upload error: ${err.message}`);
+                setInputState(true);
+            } finally {
+                fileInput.value = '';
+            }
+        };
+
+        askForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const text = questionInput.value.trim();
+            if (!text) return;
+
+            addMessage('user', text);
+            questionInput.value = '';
+            const loading = addMessage('bot', 'Analyzing document...');
+
+            try {
+                const data = await fetchJson('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: text })
+                });
+
+                loading.innerHTML = formatBotText(data.answer || 'No answer returned.');
+            } catch (err) {
+                loading.innerHTML = formatBotText(`Error: ${err.message}`);
+            }
+        };
+
+        document.getElementById('clearBtn').onclick = () => {
+            chatLog.innerHTML = '';
+            fileStatus.style.display = 'none';
+            addMessage('bot', 'Conversation reset. Upload a PDF to continue.');
+        };
+
+        setInputState(true);
+    </script>
+</body>
+</html>

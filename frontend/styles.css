@@ -1,0 +1,86 @@
+/* Sidebar Adjustments */
+.sidebar {
+    width: 260px;
+    background: #0f172a;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.compact-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    margin-top: 20px;
+    transition: 0.2s;
+}
+
+.compact-upload:hover {
+    background: #6366f1;
+    border-color: #6366f1;
+}
+
+/* Centering Logic */
+.main-chat {
+    flex: 1;
+    background: #ffffff;
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+}
+
+.chat-container {
+    width: 100%;
+    max-width: 800px; /* Standard professional chat width */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-left: 1px solid #f1f5f9;
+    border-right: 1px solid #f1f5f9;
+}
+
+.chat-viewport {
+    flex: 1;
+    padding: 40px 20px;
+    overflow-y: auto;
+}
+
+.chat-controls {
+    padding: 20px;
+    background: white;
+}
+
+/* User Message Bubble */
+.message.user {
+    background: #6366f1;
+    color: white;
+    align-self: flex-end;
+    margin-left: 50px; /* Keeps it on the right */
+}
+
+/* Bot Message Bubble */
+.message.bot {
+    background: #f1f5f9;
+    color: #1e293b;
+    align-self: flex-start;
+    margin-right: 50px; /* Keeps it on the left */
+}
+
+.btn-clear {
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+}
